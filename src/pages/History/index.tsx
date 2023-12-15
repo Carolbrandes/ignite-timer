@@ -22,7 +22,9 @@ export function History() {
                 <td>Nome da tarefa</td>
                 <td>20 minutos</td>
                 <td>Há 2 meses</td>
-                <td>Concluído</td>
+                <td>
+                  <S.Status statusColor="green">Concluído</S.Status>
+                </td>
               </tr>
             ))}
           </tbody>
