@@ -9,11 +9,18 @@ export function Home() {
     task: zod.string().min(1, 'informe a tarefa'),
     minutesAmount: zod.number().min(5, 'O ciclo precisa ser de no mínimo 5 minutos').max(60, 'O ciclo precisa ser de no máximo 60 minutos')
   })
- const {register, handleSubmit, watch} = useForm({
-  resolver: zodResolver(newCycleFormValidationSchema)
+
+type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema> //*typeof - referenciar uma variavel no ts
+
+ const {register, handleSubmit, watch} = useForm<NewCycleFormData>({
+  resolver: zodResolver(newCycleFormValidationSchema),
+  defaultValues: {
+    task: '',
+    minutesAmount: 0
+  }
  })
 
- function handleCreateNewCycle(data) {
+ function handleCreateNewCycle(data: NewCycleFormData) {
 
  }
 
