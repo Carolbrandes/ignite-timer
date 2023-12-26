@@ -12,7 +12,7 @@ export function Home() {
 
 type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema> //*typeof - referenciar uma variavel no ts
 
- const {register, handleSubmit, watch} = useForm<NewCycleFormData>({
+ const {register, handleSubmit, watch, reset} = useForm<NewCycleFormData>({
   resolver: zodResolver(newCycleFormValidationSchema),
   defaultValues: {
     task: '',
@@ -21,7 +21,7 @@ type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema> //*typeof
  })
 
  function handleCreateNewCycle(data: NewCycleFormData) {
-
+  reset()
  }
 
  const task = watch('task') // *watch - controlled component
