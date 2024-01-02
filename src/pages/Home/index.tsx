@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Play } from 'phosphor-react'
+import { HandPalm, Play } from 'phosphor-react'
 import * as S from './styles'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
-import {differenceInSeconds} from 'date-fns'
+import { differenceInSeconds } from 'date-fns'
 
 interface Cycle {
   id: string
   task: string
   minutesAmount: number
   startDate: Date
+  interruptedDate?: Date
 }
 
 export function Home() {
@@ -39,9 +40,9 @@ export function Home() {
 
   useEffect(() => {
     let interval: number
-    
-    if(activeCycle){
-       interval = setInterval(() => {
+
+    if (activeCycle) {
+      interval = setInterval(() => {
         setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate))
       }, 1000)
     }
@@ -68,6 +69,21 @@ export function Home() {
     reset()
   }
 
+  function handleInterruptCycle(){
+  
+    setCycles(state => 
+      state.map((cycle) => {
+        if(cycle.id === activeCycleId){
+          return {...cycle, interruptedDate: new Date()}
+        } else{
+          return cycle
+        }
+      })
+    )
+
+    setActiveCycleId(null)
+  }
+
   const task = watch('task') // *watch - controlled component
   const isSubmitDisabled = !task
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
@@ -78,9 +94,9 @@ export function Home() {
   const seconds = String(secondsAmount).padStart(2, '0')
 
   useEffect(() => {
-   if(activeCycle) document.title = `${minutes}:${seconds}`
+    if (activeCycle) document.title = `${minutes}:${seconds}`
   }, [minutes, seconds, activeCycle])
-  
+
 
   return (
     <S.HomeContainer>
@@ -92,6 +108,7 @@ export function Home() {
             list="task-suggestions"
             placeholder="Dê um nome para o seu projeto"
             {...register('task')}
+            disabled={!!activeCycle}
           />
 
           {/* sugestao para inputs */}
@@ -108,6 +125,7 @@ export function Home() {
             min={5}
             max={60}
             {...register('minutesAmount', { valueAsNumber: true })}
+            disabled={!!activeCycle}
           />
           <span>minutos.</span>
         </S.FormContainer>
@@ -120,9 +138,16 @@ export function Home() {
           <span>{seconds[1]}</span>
         </S.CountdownContainer>
 
-        <S.StartCountdownButton type="submit" disabled={isSubmitDisabled}>
-          <Play size={24} /> Começar
-        </S.StartCountdownButton>
+        {
+          activeCycle ? 
+          (<S.StopCountdownButton type="button" onClick={handleInterruptCycle}>
+            <HandPalm size={24} /> Interromper
+          </S.StopCountdownButton>) : 
+
+          (<S.StartCountdownButton type="submit" disabled={isSubmitDisabled}>
+            <Play size={24} /> Começar
+          </S.StartCountdownButton>)
+        }
       </form>
     </S.HomeContainer>
   )
