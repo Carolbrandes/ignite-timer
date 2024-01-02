@@ -12,6 +12,7 @@ interface Cycle {
   minutesAmount: number
   startDate: Date
   interruptedDate?: Date
+  finishedDate?: Date
 }
 
 export function Home() {
@@ -23,7 +24,7 @@ export function Home() {
 
   const newCycleFormValidationSchema = zod.object({
     task: zod.string().min(1, 'informe a tarefa'),
-    minutesAmount: zod.number().min(5, 'O ciclo precisa ser de no mínimo 5 minutos').max(60, 'O ciclo precisa ser de no máximo 60 minutos')
+    minutesAmount: zod.number().min(1, 'O ciclo precisa ser de no mínimo 5 minutos').max(60, 'O ciclo precisa ser de no máximo 60 minutos')
   })
 
   type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema> //*typeof - referenciar uma variavel no ts
@@ -37,21 +38,45 @@ export function Home() {
   })
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
 
   useEffect(() => {
     let interval: number
 
     if (activeCycle) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate))
+        const secondsDifference = differenceInSeconds(
+          new Date(),
+          activeCycle.startDate
+        )
+
+        if (secondsDifference >= totalSeconds) {
+          setCycles(state =>
+            state.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, finishedDate: new Date() }
+              } else {
+                return cycle
+              }
+            })
+          )
+
+          setAmountSecondsPassed(totalSeconds)
+          clearInterval(interval)
+        } else{
+          setAmountSecondsPassed(secondsDifference)
+        }
+        
       }, 1000)
+
+
     }
 
     // * resetar o que estava ocorrendo no useEffect anterior para que nao ocorra mais
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycle])
+  }, [activeCycle, totalSeconds, activeCycleId])
 
   function handleCreateNewCycle({ task, minutesAmount }: NewCycleFormData) {
     const id = String(new Date().getTime())
@@ -69,13 +94,13 @@ export function Home() {
     reset()
   }
 
-  function handleInterruptCycle(){
-  
-    setCycles(state => 
+  function handleInterruptCycle() {
+
+    setCycles(state =>
       state.map((cycle) => {
-        if(cycle.id === activeCycleId){
-          return {...cycle, interruptedDate: new Date()}
-        } else{
+        if (cycle.id === activeCycleId) {
+          return { ...cycle, interruptedDate: new Date() }
+        } else {
           return cycle
         }
       })
@@ -86,7 +111,6 @@ export function Home() {
 
   const task = watch('task') // *watch - controlled component
   const isSubmitDisabled = !task
-  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
   const minutesAmount = Math.floor(currentSeconds / 60)
   const secondsAmount = currentSeconds % 60
@@ -122,7 +146,7 @@ export function Home() {
             type="number"
             placeholder="00"
             step={5}
-            min={5}
+            min={1}
             max={60}
             {...register('minutesAmount', { valueAsNumber: true })}
             disabled={!!activeCycle}
@@ -139,14 +163,14 @@ export function Home() {
         </S.CountdownContainer>
 
         {
-          activeCycle ? 
-          (<S.StopCountdownButton type="button" onClick={handleInterruptCycle}>
-            <HandPalm size={24} /> Interromper
-          </S.StopCountdownButton>) : 
+          activeCycle ?
+            (<S.StopCountdownButton type="button" onClick={handleInterruptCycle}>
+              <HandPalm size={24} /> Interromper
+            </S.StopCountdownButton>) :
 
-          (<S.StartCountdownButton type="submit" disabled={isSubmitDisabled}>
-            <Play size={24} /> Começar
-          </S.StartCountdownButton>)
+            (<S.StartCountdownButton type="submit" disabled={isSubmitDisabled}>
+              <Play size={24} /> Começar
+            </S.StartCountdownButton>)
         }
       </form>
     </S.HomeContainer>
