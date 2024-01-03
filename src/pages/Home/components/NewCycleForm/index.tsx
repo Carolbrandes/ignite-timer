@@ -1,34 +1,40 @@
-import * as S from "./styles"
+import * as S from './styles'
+import { useContext } from 'react'
+import { CyclesContext } from '../..'
+import { useFormContext } from 'react-hook-form'
 
-export function NewCycleForm(){
-    return(
-        <S.FormContainer>
-        <label htmlFor="task">Vou trabalhar em</label>
-        <S.TaskInput
-          id="task"
-          list="task-suggestions"
-          placeholder="Dê um nome para o seu projeto"
-          {...register('task')}
-          disabled={!!activeCycle}
-        />
+export function NewCycleForm() {
+  const { activeCycle } = useContext(CyclesContext)
+  const { register } = useFormContext()
 
-        {/* sugestao para inputs */}
-        <datalist id="task-suggestions">
-          <option value="Projeto 1" />
-        </datalist>
+  return (
+    <S.FormContainer>
+      <label htmlFor="task">Vou trabalhar em</label>
+      <S.TaskInput
+        id="task"
+        list="task-suggestions"
+        placeholder="Dê um nome para o seu projeto"
+        {...register('task')}
+        disabled={!!activeCycle}
+      />
 
-        <label htmlFor="minutesAmount">Vou trabalhar em</label>
-        <S.MinutesAmountInput
-          id="minutesAmount"
-          type="number"
-          placeholder="00"
-          step={5}
-          min={1}
-          max={60}
-          {...register('minutesAmount', { valueAsNumber: true })}
-          disabled={!!activeCycle}
-        />
-        <span>minutos.</span>
-      </S.FormContainer>
-    )
+      {/* sugestao para inputs */}
+      <datalist id="task-suggestions">
+        <option value="Projeto 1" />
+      </datalist>
+
+      <label htmlFor="minutesAmount">Vou trabalhar em</label>
+      <S.MinutesAmountInput
+        id="minutesAmount"
+        type="number"
+        placeholder="00"
+        step={5}
+        min={1}
+        max={60}
+        {...register('minutesAmount', { valueAsNumber: true })}
+        disabled={!!activeCycle}
+      />
+      <span>minutos.</span>
+    </S.FormContainer>
+  )
 }
