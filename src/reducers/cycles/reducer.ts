@@ -1,16 +1,13 @@
 /* eslint-disable prettier/prettier */
-import { Cycle } from "../pages/Home";
+import { Cycle } from "../../pages/Home";
+import { ActionTypes } from "./actions";
 
 interface CycleState {
   cycles: Cycle[];
   activeCycleId: string | null;
 }
 
-export enum ActionTypes {
-  ADD_NEW_CYCLE = "ADD_NEW_CYCLE",
-  INTERRUPT_CURRENT_CYCLE = "INTERRUPT_CURRENT_CYCLE",
-  MARK_CURRENT_CYCLE_AS_FINISHED = "MARK_CURRENT_CYCLE_AS_FINISHED",
-}
+
 
 export function cyclesReducer(state: CycleState, action: any) {
   switch (action.type) {
