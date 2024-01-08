@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { ReactNode, createContext, useReducer, useState } from 'react'
+import { ReactNode, createContext, useEffect, useReducer, useState } from 'react'
 import { Cycle } from '../pages/Home'
-import { cyclesReducer } from '../reducers/cycles/reducer'
+import { cyclesReducer } from '../reducers/cycles/reducer';
 import { addNewCycleAction, interruptCurrentCycleAction, markCurrentCycleAsFinishedAction } from '../reducers/cycles/actions'
+import { differenceInSeconds } from 'date-fns';
 
 interface CreateCycleData {
     task: string
@@ -32,12 +33,35 @@ export function CyclesContextProvider({
     const [cyclesState, dispatch] = useReducer(cyclesReducer, {
         cycles: [],
         activeCycleId: null
-    })
+    }, (initialState) => {
+        // *define o valor inicial
+        const storedStateAsJSON = localStorage.getItem('@ignite-timer:cycles-state-1.0.0')
 
-    const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+        if (storedStateAsJSON) {
+            return JSON.parse(storedStateAsJSON)
+        }
+
+        return initialState
+    })
 
     const { cycles, activeCycleId } = cyclesState
     const activeCycle = cycles.find((cycle: Cycle) => cycle.id === activeCycleId)
+
+    const [amountSecondsPassed, setAmountSecondsPassed] = useState(() => {
+        if (activeCycle) {
+            return differenceInSeconds(new Date(), new Date(activeCycle.startDate))
+        }
+
+        return 0
+    })
+
+    useEffect(() => {
+        const stateJSON = JSON.stringify(cyclesState)
+        // *@nomedoapp-nomedaprop-versao. essa versao e importante pq se um dia mudar por ex o formato dessa variavel, podemos mudar a versao e quando usuario abrir app nao vai ter chance de ter bug, pq vai atualizar no localstorage ao mudar o nome da chave. 
+        localStorage.setItem('@ignite-timer:cycles-state-1.0.0', stateJSON)
+    }, [cyclesState])
+
+
 
 
     function createNewCycle({ task, minutesAmount }: CreateCycleData) {
